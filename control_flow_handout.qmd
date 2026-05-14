@@ -1,0 +1,237 @@
+---
+title: "R Control Flow Statements: Building Blocks for Automated Decision-Making"
+shorttitle: "R Control Flow Statements"
+author:
+  - name: Sherine
+    email: your.email@stud.hs-fresenius.de
+    affiliations:
+      - name: Fresenius University of Applied Sciences
+    corresponding: true
+course: "Data Analysis for Decision-Making (SS 2026)"
+professor: "Prof. Dr. Stephan Huber"
+duedate: "2026-05-19"
+abstract: |
+  Control flow statements are the foundation of any R program that does more than run line by line. They allow code to make decisions, repeat operations, and respond dynamically to data. This handout introduces the core control flow tools in R — if/else, ifelse(), for loops, while loops, and the break and next keywords — and demonstrates their use in practical data analysis contexts. A hands-on exercise is included to reinforce the material.
+keywords: [R, control flow, if-else, for loop, while loop, automation]
+format:
+  apaquarto-pdf:
+    documentmode: stu
+    a4paper: true
+  apaquarto-html:
+    embed-resources: true
+bibliography: literatur.bib
+number-sections: true
+floatsintext: true
+---
+
+# Introduction
+
+When you first write code in R, it runs exactly as written — top to bottom, every line, every time. That works for simple tasks. But real data analysis is rarely simple. You need code that can check a condition and act on it, repeat a task across hundreds of rows, or skip values that do not belong.
+
+This is what control flow makes possible. As @lenovo_controlflow defines it, control flow refers to the order in which the instructions of a program are executed — and more importantly, how that order can be shaped by conditions and logic.
+
+This handout covers the main control flow tools in R: conditional statements (`if`, `else if`, `else`, and `ifelse()`), iteration (`for` and `while` loops), and loop control (`break` and `next`). Each section explains what the tool does, when to use it, and shows a practical example.
+
+# Conditional Statements
+
+## if, else if, and else
+
+The `if` statement is the most fundamental control flow tool. It evaluates a condition and runs a block of code only if that condition is `TRUE` [@grolemund2014].
+
+```{r}
+#| echo: true
+score <- 85
+
+if (score >= 90) {
+  print("Excellent")
+} else if (score >= 60) {
+  print("Passed")
+} else {
+  print("Failed")
+}
+```
+
+R checks each condition from top to bottom and stops at the first one that is `TRUE`. The `else if` and `else` clauses are optional — you can have as many `else if` branches as your logic requires.
+
+One of the most common beginner mistakes is using `=` instead of `==` inside a condition. The single `=` assigns a value. The double `==` asks a question — is this equal to that? They look nearly identical but do completely different things [@peng2020].
+
+## ifelse()
+
+The `if / else` structure works on a single value. In data analysis, you typically need to apply a condition to an entire column at once. The `ifelse()` function handles this.
+
+```{r}
+#| echo: true
+scores <- c(45, 72, 88, 55, 91, 60)
+result <- ifelse(scores >= 60, "Pass", "Fail")
+print(result)
+```
+
+`ifelse()` applies the condition to every element of the vector simultaneously. It is faster and cleaner than writing a loop for this purpose [@wickham2019].
+
+# Loops
+
+## for Loops
+
+A `for` loop repeats a block of code for every item in a sequence. Use it when you know exactly what you are iterating over — a vector of column names, a range of numbers, a list of files [@grolemund2014].
+
+```{r}
+#| echo: true
+data <- data.frame(
+  sales    = c(200, 150, 300),
+  expenses = c(100, 120, 90),
+  profit   = c(100, 30, 210)
+)
+
+for (col in names(data)) {
+  cat("Mean of", col, ":", mean(data[[col]]), "\n")
+}
+```
+
+The loop variable (`col` in this case) takes each value from the sequence in turn. When the sequence is exhausted, the loop stops automatically. You choose the variable name — it has no effect on how the loop runs.
+
+## while Loops
+
+A `while` loop keeps running as long as a condition remains `TRUE`. Use it when you do not know in advance how many iterations you will need [@peng2020].
+
+```{r}
+#| echo: true
+budget <- 1000
+spent  <- 0
+items  <- 0
+
+while (spent + 150 <= budget) {
+  spent <- spent + 150
+  items <- items + 1
+}
+
+cat("Bought", items, "items | Spent €", spent, "\n")
+```
+
+The critical requirement of a `while` loop is that something inside the loop must move the program toward the exit condition. If the condition never becomes `FALSE`, the loop runs indefinitely — this is called an infinite loop, and it will freeze your R session. Always verify that your loop has a guaranteed exit path.
+
+# Loop Control: break and next
+
+Two keywords give finer control over what happens inside a loop.
+
+`break` exits the loop immediately, regardless of whether the sequence or condition has been fully processed. This is useful when you are searching for a specific value and want to stop as soon as you find it.
+
+`next` skips the rest of the current iteration and moves on to the next one. This is useful for filtering out values you do not want to process.
+
+```{r}
+#| echo: true
+values <- c(12, 7, 33, -5, 9)
+
+# break: stop when a negative is found
+for (v in values) {
+  if (v < 0) { cat("Negative found:", v, "\n"); break }
+  cat("OK:", v, "\n")
+}
+
+# next: skip negatives, process everything else
+for (v in values) {
+  if (v < 0) next
+  cat(v, "")
+}
+```
+
+# A Practical Example
+
+The following example combines several control flow tools in a realistic data cleaning scenario. The value `-999` is a common placeholder for missing data in many datasets.
+
+```{r}
+#| echo: true
+data  <- c(200, -999, 450, -999, 310, 180)
+clean <- c()
+
+for (x in data) {
+  if (x == -999) next   # skip missing values
+  if (x > 400)   next   # skip outliers
+  clean <- c(clean, x)
+}
+
+cat("Cleaned data:", clean, "\n")
+cat("Mean:", mean(clean), "\n")
+```
+
+This pattern — a `for` loop combined with `if` statements and `next` — appears constantly in real data analysis work. Understanding it gives you the foundation to automate almost any repetitive task on a dataset.
+
+# Exercise
+
+The following exercise is designed to be completed after the presentation.
+
+**Task:** You are given the following vector:
+
+```r
+numbers <- c(3, -1, 7, 0, -4, 9, 2, -8, 5, 1)
+```
+
+1. Write a `for` loop that goes through each number.
+2. Use `if / else` to print `"positive"`, `"negative"`, or `"zero"` for each value.
+3. **Bonus:** Use `next` to skip any number greater than 6 before classifying it.
+
+**Solution:**
+
+```{r}
+#| echo: true
+numbers <- c(3, -1, 7, 0, -4, 9, 2, -8, 5, 1)
+
+for (n in numbers) {
+  if (n > 6) next
+
+  if (n > 0) {
+    cat(n, "→ positive\n")
+  } else if (n < 0) {
+    cat(n, "→ negative\n")
+  } else {
+    cat(n, "→ zero\n")
+  }
+}
+```
+
+# Summary
+
+Table 1 summarises the control flow tools covered in this handout and when to use each one.
+
+| Statement | When to use it |
+|---|---|
+| `if / else` | One decision on one value |
+| `else if` | More than two possible outcomes |
+| `ifelse()` | Decision across a whole vector |
+| `for` | Repeat over a known sequence |
+| `while` | Repeat until a condition changes |
+| `break` | Exit a loop immediately |
+| `next` | Skip one iteration, keep going |
+
+: Summary of R control flow statements
+
+Control flow is not an advanced topic — it is a foundational one. Every meaningful R script you write will use at least one of these tools. Mastering them early makes everything else easier.
+
+# References
+
+::: {#refs}
+:::
+
+{{< pagebreak >}}
+
+# Affidavit
+
+I hereby affirm that this submitted paper was authored unaided and solely by me. Additionally, no other sources than those in the reference list were used. Parts of this paper, including tables and figures, that have been taken either verbatim or analogously from other works have in each case been properly cited with regard to their origin and authorship. This paper either in parts or in its entirety, be it in the same or similar form, has not been submitted to any other examination board and has not been published.
+
+I acknowledge that the university may use plagiarism detection software to check my thesis. I agree to cooperate with any investigation of suspected plagiarism and to provide any additional information or evidence requested by the university.
+
+- [x] The handout contains 3–5 pages of text.
+- [x] The submission contains the Quarto file of the handout.
+- [x] The submission contains the Quarto file of the presentation.
+- [x] The submission contains the HTML file of the handout.
+- [x] The submission contains the HTML file of the presentation.
+- [x] The submission contains the PDF file of the handout.
+- [x] The submission contains the PDF file of the presentation.
+- [x] The title page contains name, email, and matriculation number.
+- [x] The handout contains a bibliography in APA citation style.
+- [x] R code is included.
+- [x] The exercise is included.
+- [x] The affidavit is filled out.
+- [ ] Link to presentation published on GitHub.
+- [ ] Link to handout published on GitHub.
+
+[Sherine] | [2026-05-19] | [Cologne]
