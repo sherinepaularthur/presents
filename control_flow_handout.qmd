@@ -2,8 +2,8 @@
 title: "R Control Flow Statements: Building Blocks for Automated Decision-Making"
 shorttitle: "R Control Flow Statements"
 author:
-  - name: Sherine
-    email: your.email@stud.hs-fresenius.de
+  - name: Sherine Paul Arthur
+    email: paul_arthur.sherine@stud.hs-fresenius.de
     affiliations:
       - name: Fresenius University of Applied Sciences
     corresponding: true
