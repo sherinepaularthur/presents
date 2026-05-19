@@ -1,210 +1,220 @@
 ---
 title: "R Control Flow Statements: Building Blocks for Automated Decision-Making"
 shorttitle: "R Control Flow Statements"
+
 author:
-  - name: Sherine Paul Arthur
-    email: paul_arthur.sherine@stud.hs-fresenius.de
-    affiliations:
-      - name: Fresenius University of Applied Sciences
-    corresponding: true
-course: "Data Analysis for Decision-Making (SS 2026)"
-professor: "Prof. Dr. Stephan Huber"
-duedate: "2026-05-19"
-abstract: |
-  Control flow statements are the foundation of any R program that does more than run line by line. They allow code to make decisions, repeat operations, and respond dynamically to data. This handout introduces the core control flow tools in R — if/else, ifelse(), for loops, while loops, and the break and next keywords — and demonstrates their use in practical data analysis contexts. A hands-on exercise is included to reinforce the material.
-keywords: [R, control flow, if-else, for loop, while loop, automation]
+    - name: "Sherine Paul Arthur"
+      email: paul_arthur.sherine@stud.hs-fresenius.de
+      affiliations: "Fresenius University of Applied Science | 401147341"
+      corresponding: true
+
+abstract: "Every useful R program makes decisions. It checks whether a value meets a condition, repeats a calculation across a dataset, or skips rows that do not belong. These behaviours are not built into R automatically: you write them using control flow statements. This handout is a practical reference for the control flow tools covered in the presentation: if/else, ifelse(), for loops, while loops, break, and next. Each section explains the concept, shows the syntax, and demonstrates it with a realistic example."
+
+floatsintext: true
+
 format:
   apaquarto-pdf:
     documentmode: stu
-    a4paper: true
+    course: "Data Analysis for Decision-Making (SS 2026)"
+    professor: "Prof. Dr. Stephan Huber"
+    duedate: "2026-05-19"
+    keep-tex: false
+    fig-align: "left"
+    include-in-header:
+      text: |
+        \linespread{1.5}
+        \hypersetup{colorlinks=false, hidelinks}
   apaquarto-html:
+    toc: true
     embed-resources: true
-bibliography: literatur.bib
+
+a4paper: true
+bibliography: literature.bib
 number-sections: true
-floatsintext: true
+suppress-appendix: true
 ---
 
-# Introduction
 
-When you first write code in R, it runs exactly as written — top to bottom, every line, every time. That works for simple tasks. But real data analysis is rarely simple. You need code that can check a condition and act on it, repeat a task across hundreds of rows, or skip values that do not belong.
+# What is Control Flow?
 
-This is what control flow makes possible. As @lenovo_controlflow defines it, control flow refers to the order in which the instructions of a program are executed — and more importantly, how that order can be shaped by conditions and logic.
+When you read a page you go from top to bottom, by line. R does exactly this too! When you're new with R you will find that this is fine because the built in packages already perform most of what you need. but as you progress you will want to work with real data and do some of the coding yourself. so this is not enough.
 
-This handout covers the main control flow tools in R: conditional statements (`if`, `else if`, `else`, and `ifelse()`), iteration (`for` and `while` loops), and loop control (`break` and `next`). Each section explains what the tool does, when to use it, and shows a practical example.
+Real data analysis requires decisions. A value might be missing. A column might need to be recoded. A loop might need to stop early. You cannot anticipate all of this in advance, because the answers depend on what the data actually contains. Control flow is how you write code that responds to those conditions rather than ignoring them.
+
+According to @lenovo_controlflow, control flow refers to the order in which instructions in a program are executed, including how that order changes based on conditions and logic. In R, there are three ways to control that order:
+
+- **Branching** — run a block of code only when a condition is met
+- **Looping** — repeat a block of code over a sequence or until a condition changes
+- **Jumping** — interrupt a loop mid-run
+
+Lets go over this one by one. 
 
 # Conditional Statements
 
 ## if, else if, and else
 
-The `if` statement is the most fundamental control flow tool. It evaluates a condition and runs a block of code only if that condition is `TRUE` [@grolemund2014].
+An `if` statement evaluates a condition and runs a block of code only if that condition is `TRUE`. If it is `FALSE`, R skips the block and moves on. The `else` clause provides an alternative — what to do when the condition is not met.
 
 ```{r}
 #| echo: true
 score <- 85
 
 if (score >= 90) {
-  print("Excellent")
+  print("Distinction")
 } else if (score >= 60) {
-  print("Passed")
+  print("Pass")
 } else {
-  print("Failed")
+  print("Fail")
 }
 ```
 
-R checks each condition from top to bottom and stops at the first one that is `TRUE`. The `else if` and `else` clauses are optional — you can have as many `else if` branches as your logic requires.
+Note: R checks each condition from top to bottom and stops at the first one that is `TRUE`. Everything below it is skipped. This matters for how you order your conditions so always start with the most specific case and work toward the most general. If you put the broadest condition first, the more specific ones will never be reached.
 
-One of the most common beginner mistakes is using `=` instead of `==` inside a condition. The single `=` assigns a value. The double `==` asks a question — is this equal to that? They look nearly identical but do completely different things [@peng2020].
+## The == Operator
 
-## ifelse()
+A common mistake that occurs here while coding in R is using `=` instead of `==` inside a condition. The single `=` assigns a value to a variable. The double `==` tests whether two values are equal. They look almost identical but do completely different things [@peng2020].
 
-The `if / else` structure works on a single value. In data analysis, you typically need to apply a condition to an entire column at once. The `ifelse()` function handles this.
 
 ```{r}
 #| echo: true
-scores <- c(45, 72, 88, 55, 91, 60)
-result <- ifelse(scores >= 60, "Pass", "Fail")
-print(result)
+status <- "active"
+
+if (status == "active") {
+  print("Account is active")
+}
 ```
 
-`ifelse()` applies the condition to every element of the vector simultaneously. It is faster and cleaner than writing a loop for this purpose [@wickham2019].
+When in doubt: assignment uses `<-`, comparison uses `==`.
+
+## ifelse() for Vectors
+
+The `if / else` structure works on a single value at a time. In data analysis, you routinely need to apply a condition to an entire column. The `ifelse()` function does exactly this — it evaluates the condition for every element of a vector and returns a result for each one.   
+
+```{r}
+#| echo: true
+# Final exam results
+students <- c("Ali", "Luisa", "Roopam", "Mahdi", "Cagan")
+scores   <- c(82, 47, 91, 55, 68)
+
+result <- ifelse(scores >= 60, "Pass", "Fail")
+
+for (i in 1:length(students)) {
+  cat(students[i], "→", result[i], "\n")
+}
+```
+
+`ifelse()` is one of the most practical tools in data cleaning. It can recode variables, flag outliers, and create new columns based on existing ones and it does it all in a single line [@wickham2019].
 
 # Loops
 
 ## for Loops
 
-A `for` loop repeats a block of code for every item in a sequence. Use it when you know exactly what you are iterating over — a vector of column names, a range of numbers, a list of files [@grolemund2014].
+A `for` loop runs a block of code once for every item in a sequence. The loop variable takes each value in turn, and when the sequence is exhausted, the loop stops automatically.
 
 ```{r}
 #| echo: true
-data <- data.frame(
-  sales    = c(200, 150, 300),
-  expenses = c(100, 120, 90),
-  profit   = c(100, 30, 210)
-)
+months <- c("January", "February", "March")
 
-for (col in names(data)) {
-  cat("Mean of", col, ":", mean(data[[col]]), "\n")
+for (m in months) {
+  cat("Checking data for", m, "\n")
 }
 ```
 
-The loop variable (`col` in this case) takes each value from the sequence in turn. When the sequence is exhausted, the loop stops automatically. You choose the variable name — it has no effect on how the loop runs.
-
-## while Loops
-
-A `while` loop keeps running as long as a condition remains `TRUE`. Use it when you do not know in advance how many iterations you will need [@peng2020].
+A common real-world use case is applying the same operation to every column in a data frame.
 
 ```{r}
 #| echo: true
-budget <- 1000
-spent  <- 0
-items  <- 0
+# Weekly coffee budget per student (€)
+students <- c("Sherine", "Milad", "Nwanneka", "Mohammed")
+budget   <- c(18, 22, 9, 31)
 
-while (spent + 150 <= budget) {
-  spent <- spent + 150
-  items <- items + 1
-}
-
-cat("Bought", items, "items | Spent €", spent, "\n")
-```
-
-The critical requirement of a `while` loop is that something inside the loop must move the program toward the exit condition. If the condition never becomes `FALSE`, the loop runs indefinitely — this is called an infinite loop, and it will freeze your R session. Always verify that your loop has a guaranteed exit path.
-
-# Loop Control: break and next
-
-Two keywords give finer control over what happens inside a loop.
-
-`break` exits the loop immediately, regardless of whether the sequence or condition has been fully processed. This is useful when you are searching for a specific value and want to stop as soon as you find it.
-
-`next` skips the rest of the current iteration and moves on to the next one. This is useful for filtering out values you do not want to process.
-
-```{r}
-#| echo: true
-values <- c(12, 7, 33, -5, 9)
-
-# break: stop when a negative is found
-for (v in values) {
-  if (v < 0) { cat("Negative found:", v, "\n"); break }
-  cat("OK:", v, "\n")
-}
-
-# next: skip negatives, process everything else
-for (v in values) {
-  if (v < 0) next
-  cat(v, "")
-}
-```
-
-# A Practical Example
-
-The following example combines several control flow tools in a realistic data cleaning scenario. The value `-999` is a common placeholder for missing data in many datasets.
-
-```{r}
-#| echo: true
-data  <- c(200, -999, 450, -999, 310, 180)
-clean <- c()
-
-for (x in data) {
-  if (x == -999) next   # skip missing values
-  if (x > 400)   next   # skip outliers
-  clean <- c(clean, x)
-}
-
-cat("Cleaned data:", clean, "\n")
-cat("Mean:", mean(clean), "\n")
-```
-
-This pattern — a `for` loop combined with `if` statements and `next` — appears constantly in real data analysis work. Understanding it gives you the foundation to automate almost any repetitive task on a dataset.
-
-# Exercise
-
-The following exercise is designed to be completed after the presentation.
-
-**Task:** You are given the following vector:
-
-```r
-numbers <- c(3, -1, 7, 0, -4, 9, 2, -8, 5, 1)
-```
-
-1. Write a `for` loop that goes through each number.
-2. Use `if / else` to print `"positive"`, `"negative"`, or `"zero"` for each value.
-3. **Bonus:** Use `next` to skip any number greater than 6 before classifying it.
-
-**Solution:**
-
-```{r}
-#| echo: true
-numbers <- c(3, -1, 7, 0, -4, 9, 2, -8, 5, 1)
-
-for (n in numbers) {
-  if (n > 6) next
-
-  if (n > 0) {
-    cat(n, "→ positive\n")
-  } else if (n < 0) {
-    cat(n, "→ negative\n")
+for (i in 1:length(students)) {
+  if (budget[i] > 25) {
+    cat(students[i], "— needs an intervention\n")
   } else {
-    cat(n, "→ zero\n")
+    cat(students[i], "— doing fine\n")
   }
 }
 ```
 
+
+## while Loops
+
+A `for` loop is appropriate when you know what you are iterating over. A `while` loop is appropriate when you know when to stop, but not how many steps it will take to get there.
+
+```{r}
+#| echo: true
+balance <- 500
+month   <- 0
+
+while (balance < 1000) {
+  balance <- balance * 1.05
+  month   <- month + 1
+}
+
+cat("Reached €1000 after", month, "months\n")
+```
+
+The loop keeps running as long as `balance < 1000` is `TRUE`. Once the balance exceeds 1000, the condition becomes `FALSE` and the loop stops.
+
+The critical rule with `while` loops is that something inside the loop must move the program toward the exit condition. If `balance` never changed, the condition would remain `TRUE` forever, this is an infinite loop, and R will freeze until you force-quit it [@rcore2024].
+
+# Loop Control: break and next
+
+Two keywords give you finer control over what happens inside a loop.
+
+## break
+
+`break` exits the loop immediately. Any remaining iterations are cancelled.
+
+```{r}
+#| echo: true
+readings <- c(4.2, 3.8, 5.1, -99.0, 4.7, 3.9)
+
+for (r in readings) {
+  if (r < 0) {
+    cat("Invalid reading detected:", r, "— stopping.\n")
+    break
+  }
+  cat("Reading:", r, "\n")
+}
+```
+
+Use `break` when a certain condition means there is no point continuing. for instance, when a data quality check fails and further processing would produce meaningless results.[@hamelg2021]
+
+## next
+
+`next` skips the current iteration and moves on to the next one. The loop continues normally.
+
+```{r}
+#| echo: true
+readings <- c(4.2, 3.8, -99.0, 5.1, -99.0, 3.9)
+
+for (r in readings) {
+  if (r < 0) next
+  cat("Reading:", r, "\n")
+}
+```
+
+The difference between `break` and `next` is straightforward: `break` ends the loop entirely, `next` skips one step and keeps going.
+
 # Summary
 
-Table 1 summarises the control flow tools covered in this handout and when to use each one.
+Table 1 summarises the control flow tools covered in this handout.
 
-| Statement | When to use it |
-|---|---|
-| `if / else` | One decision on one value |
-| `else if` | More than two possible outcomes |
-| `ifelse()` | Decision across a whole vector |
-| `for` | Repeat over a known sequence |
-| `while` | Repeat until a condition changes |
-| `break` | Exit a loop immediately |
-| `next` | Skip one iteration, keep going |
+| Statement | What it does | When to use it |
+|---|---|---|
+| `if / else` | Runs code when a condition is true | Single-value decisions |
+| `else if` | Adds additional branches | More than two outcomes |
+| `ifelse()` | Applies a condition to a whole vector | Column-wise transformations |
+| `for` | Repeats over a known sequence | Columns, rows, file lists |
+| `while` | Repeats until a condition changes | Unknown number of iterations |
+| `break` | Exits the loop immediately | Stop on a specific condition |
+| `next` | Skips one iteration | Filter values mid-loop |
 
-: Summary of R control flow statements
+: Summary of R control flow tools {#tbl-summary}
 
-Control flow is not an advanced topic — it is a foundational one. Every meaningful R script you write will use at least one of these tools. Mastering them early makes everything else easier.
+{{< pagebreak >}}
 
 # References
 
@@ -231,7 +241,7 @@ I acknowledge that the university may use plagiarism detection software to check
 - [x] R code is included.
 - [x] The exercise is included.
 - [x] The affidavit is filled out.
-- [ ] Link to presentation published on GitHub.
-- [ ] Link to handout published on GitHub.
+- [x] Link to presentation published on GitHub.
+- [x] Link to handout published on GitHub.
 
-[Sherine] | [2026-05-19] | [Cologne]
+Sherine Paul Arthur | 401147341 | 2026-05-19 | Cologne

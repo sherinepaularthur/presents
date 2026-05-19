@@ -1,7 +1,7 @@
 ---
 title: "R Control Flow Statements"
 subtitle: "Building Blocks for Automated Decision-Making"
-author: "Sherine | 401147341 | paul_arthur.sherine@stud.hs-fresenius.de"
+author: "Sherine Paul Arthur | 401147341 | paul_arthur.sherine@stud.hs-fresenius.de"
 date: today
 format:
   revealjs:
@@ -12,48 +12,51 @@ format:
     self-contained: true
     smaller: true
     scrollable: false
+    footer: "Data Analysis for Decision-Making (SS 2026) | Prof. Dr. Stephan Huber"
   pdf:
     documentclass: beamer
+    pdf-engine: pdflatex
 ---
 
 ## Where we left off
 
-Ali got the data into R. Luisa showed you how to read it.
+we got the data into R. and we saw how to describe it. so whats next?
 
-But data sitting in a data frame doesn't do anything on its own.
+a data frame sitting in your environment doesn't do anything on its own.
 
-At some point you need to make decisions with it — check conditions, repeat tasks, skip things that don't belong.
+At some point you need your code to **make decisions** — check a condition, repeat a task, skip a row that doesn't belong.
 
-That's the step we're covering today.
+That is what we are covering today.
 
 ---
 
 ## What is control flow?
 
 > "Control flow refers to the order in which the instructions of a program are executed."
+>
 > — Lenovo Tech Glossary
 
-By default, R runs every line of your code, top to bottom, no questions asked.
+By default R runs every line, top to bottom, no questions asked.
 
 Control flow gives you three tools to change that:
 
-| Tool | What it does |
-|---|---|
-| **Branching** | Run code only when a condition is met |
-| **Looping** | Repeat code automatically |
-| **Jumping** | Skip or stop mid-loop |
+- **Branching** — run code only when a condition is met
+- **Looping** — repeat code automatically
+- **Jumping** — skip or stop mid-loop
+
+
 
 ---
 
-## Branching — the idea
+## Branching — before we write any code
 
-Imagine checking grades for 300 students:
+Imagine you have the final exam scores for everyone in this room.
 
-- Score ≥ 90 → send congratulations  
-- Score 60–89 → send pass confirmation  
-- Score < 60 → flag for follow-up  
+- Score ≥ 90 → excellent
+- Score 60–89 → passed
+- Score < 60 → needs follow-up
 
-You wouldn't do this manually. You write the rule once — R applies it to every row.
+You would not check each one manually. You write the rule once and let R apply it to every row.
 
 That rule is an `if / else` statement.
 
@@ -66,57 +69,35 @@ That rule is an `if / else` statement.
 score <- 85
 
 if (score >= 90) {
-  print("Excellent — send congratulations")
+  print("Excellent")
 } else if (score >= 60) {
-  print("Passed — send confirmation")
+  print("Passed")
 } else {
-  print("Failed — flag for follow-up")
+  print("Needs follow-up")
 }
 ```
 
 R checks each condition top to bottom and stops at the first `TRUE`.
 
-> ⚠️ Always use `==` to compare inside `if()`, never `=`  
+>  Inside `if()` always use `==` to compare, never `=`
 > `=` stores a value — `==` asks a question
 
 ---
 
-## `else if` — more than two outcomes
+## `ifelse()` — the same logic, for an entire column
 
-Chain as many conditions as you need. R works through them in order.
-
-```{r}
-#| echo: true
-temperature <- 22
-
-if (temperature >= 35) {
-  print("Extreme heat")
-} else if (temperature >= 25) {
-  print("Warm")
-} else if (temperature >= 15) {
-  print("Mild")
-} else {
-  print("Cold")
-}
-```
-
-Think of it as a checklist — R stops the moment it finds a match.
-
----
-
-## `ifelse()` — decisions across a whole vector
-
-`if / else` works on one value. Your data has thousands of rows.
-
-`ifelse()` applies the condition to every element at once.
+`if / else` works on **one value**. Your data has hundreds of rows.
 
 ```{r}
 #| echo: true
-scores <- c(45, 72, 88, 55, 91, 60)
+# Final exam results
+scores  <- c(Ali=82, Luisa=47, Roopam=91, Mahdi=55, Cagan=68)
 
-result <- ifelse(scores >= 60, "Pass", "Fail")
+result  <- ifelse(scores >= 60, "Pass", "Fail")
 print(result)
 ```
+
+`ifelse()` applies the condition to every element at once.
 
 Same logic as `if / else` — completely different scale.
 
@@ -124,9 +105,9 @@ Same logic as `if / else` — completely different scale.
 
 ## Looping — the idea
 
-Luisa showed you the mean of one column.
+we know how to get the mean of one column.
 
-What if you have 20 columns?
+but what if you have 20 columns and need the mean of each?
 
 ```{r}
 #| echo: true
@@ -151,15 +132,19 @@ Go through every item in a sequence and do something with each one.
 
 ```{r}
 #| echo: true
-products <- c("Laptop", "Phone", "Tablet")
+# Weekly coffee budget per student (€)
+coffee <- c(Sherine=18, Milad=22, Nwanneka=9, Mohammed=31)
 
-for (item in products) {
-  cat("Processing:", item, "\n")
+for (name in names(coffee)) {
+  if (coffee[name] > 25) {
+    cat(name, "— needs an intervention\n")
+  } else {
+    cat(name, "— doing fine\n")
+  }
 }
 ```
 
-`item` takes each value from the vector one at a time.  
-When the vector runs out — the loop stops automatically.
+The loop variable takes each value one at a time. When it runs out — it stops.
 
 ---
 
@@ -169,41 +154,50 @@ Use when you don't know how many steps it will take.
 
 ```{r}
 #| echo: true
-budget <- 1000
-spent  <- 0
-items  <- 0
+balance <- 500
+month   <- 0
 
-while (spent + 150 <= budget) {
-  spent <- spent + 150
-  items <- items + 1
+while (balance < 1000) {
+  balance <- balance * 1.05   # 5% monthly return
+  month   <- month + 1
 }
 
-cat("Bought", items, "items | Spent €", spent, "\n")
+cat("Reached €1000 after", month, "months\n")
 ```
 
-Keeps going as long as the condition is `TRUE`.  
+Keeps going as long as the condition is `TRUE`.
 Stops the moment it becomes `FALSE`.
 
 ---
 
-## ⚠️ Infinite loops
+## The infinite loop
 
 If the condition never becomes `FALSE` — R freezes.
 
 ```r
-# DO NOT RUN
+# DO NOT RUN THIS
 x <- 1
 while (x > 0) {
   print(x)
-  # x never changes — runs forever
+  # x never changes — this never stops
 }
 ```
 
-Always make sure something inside the loop moves you toward the exit.
+Always make sure something inside the loop **moves you toward the exit**.
 
-In the budget example — `spent` keeps increasing until the condition fails.
+In the savings example — `balance` keeps growing until the condition fails.
 
 ---
+
+
+## Jumping — interrupting a loop
+
+Sometimes a loop needs to stop early or skip a step.
+
+R gives you two tools for this: `break` and `next`.
+
+---
+
 
 ## `break` and `next`
 
@@ -211,11 +205,14 @@ In the budget example — `spent` keeps increasing until the condition fails.
 
 ```{r}
 #| echo: true
-values <- c(12, 7, 33, -5, 9)
+submissions <- c(Saketh=4.2, Adineh=3.8, Shravanthi=-99, Bahadori=5.1)
 
-for (v in values) {
-  if (v < 0) { cat("Negative found:", v, "\n"); break }
-  cat("OK:", v, "\n")
+for (name in names(submissions)) {
+  if (submissions[name] < 0) {
+    cat("Missing submission from", name, "— stopping.\n")
+    break
+  }
+  cat(name, "— submitted OK\n")
 }
 ```
 
@@ -223,9 +220,9 @@ for (v in values) {
 
 ```{r}
 #| echo: true
-for (v in values) {
-  if (v < 0) next
-  cat(v, "")
+for (name in names(submissions)) {
+  if (submissions[name] < 0) next
+  cat(name, "— submitted OK\n")
 }
 ```
 
@@ -235,38 +232,38 @@ for (v in values) {
 
 ```{r}
 #| echo: true
-data  <- c(200, -999, 450, -999, 310, 180)
+# -999 is a common placeholder for missing data
+raw   <- c(320, -999, 415, 280, -999, 390, 610, 305)
 clean <- c()
 
-for (x in data) {
-  if (x == -999) next   # skip missing
-  if (x > 400)   next   # skip outliers
+for (x in raw) {
+  if (x == -999) next    # skip missing
+  if (x > 500)   next    # skip outliers
   clean <- c(clean, x)
 }
 
-cat("Cleaned:", clean, "\n")
-cat("Mean:   ", mean(clean), "\n")
+cat("Original:", length(raw), "values\n")
+cat("Clean:   ", length(clean), "values\n")
+cat("Mean:    ", round(mean(clean), 1), "\n")
 ```
 
-A `for` loop + `if` + `next` — three tools cleaning a dataset automatically.
+A `for` loop + `if` + `next` — three tools, one clean dataset.
 
 ---
 
 ## Summary
 
-| Statement | When to use it |
-|---|---|
-| `if / else` | One decision on one value |
-| `else if` | More than two possible outcomes |
-| `ifelse()` | Decision across a whole vector |
-| `for` | Repeat over a known sequence |
-| `while` | Repeat until a condition changes |
-| `break` | Exit the loop immediately |
-| `next` | Skip this iteration, keep going |
+- `if / else` — one decision on one value
+- `else if` — more than two possible outcomes
+- `ifelse()` — decision across a whole vector
+- `for` — repeat over a known sequence
+- `while` — repeat until a condition changes
+- `break` — exit the loop immediately
+- `next` — skip this iteration, keep going
 
 ---
 
-## Exercise
+## Your turn — exercise
 
 You have this vector:
 
@@ -278,7 +275,6 @@ Write a `for` loop that prints `"positive"`, `"negative"`, or `"zero"` for each 
 
 **Bonus:** use `next` to skip any number greater than 6.
 
-*Open a new R script — you have 7 minutes.*
 
 ---
 
@@ -313,31 +309,20 @@ Lenovo. (n.d.). *Control flow*. https://www.lenovo.com/us/en/glossary/control-fl
 
 Peng, R. D. (2020). *R programming for data science*. Leanpub. https://bookdown.org/rdpeng/rprogdatascience/
 
-R Core Team. (2024). *R: A language and environment for statistical computing*. R Foundation. https://www.R-project.org/
+Phillips, N. D. (2018). *YaRrr! The Pirate's Guide to R*. https://bookdown.org/ndphillips/YaRrr/
+
+R Core Team. (2024). *R: A language and environment for statistical computing*. https://www.R-project.org/
 
 Wickham, H. (2019). *Advanced R* (2nd ed.). Chapman and Hall. https://adv-r.hadley.nz/
 
 ---
 
-## Affidavit
+## Access the materials
 
-I hereby affirm that this submitted paper was authored unaided and solely by me. No other sources than those in the reference list were used. Parts taken verbatim or analogously from other works have been properly cited. This paper has not been submitted to any other examination board and has not been published.
+Scan to open the presentation and handout on your device:
 
-I acknowledge that the university may use plagiarism detection software to check my submission. I agree to cooperate with any investigation of suspected plagiarism.
+**Presentation:**
+https://sherinepaularthur.github.io/presents/control_flow_presentation.html 
 
----
-
-## Checklist
-
-- [x] Quarto files submitted
-- [x] HTML files submitted
-- [x] PDF files submitted
-- [x] Title page contains name, email, matriculation number
-- [x] Bibliography in APA style
-- [x] R code included
-- [x] Exercise included
-- [x] Affidavit filled out
-- [ ] Published on GitHub
-- [ ] GitHub link shared with audience
-
-[Sherine] | [Date] | [Cologne]
+**Handout:**
+https://sherinepaularthur.github.io/presents/control_flow_handout.html
