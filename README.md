@@ -2,6 +2,6 @@
 
 R Control Flow Statements: Building Blocks for Automated Decision-Making
 
-Presentation: https://sherinepaularthur.github.io/presents/control_flow_presentation.html
+**Presentation:** [Open Presentation](https://sherinepaularthur.github.io/presents/control_flow_presentation.html)
 
-Handout: https://sherinepaularthur.github.io/presents/control_flow_handout.html
+**Handout:** [Open Handout](https://sherinepaularthur.github.io/presents/control_flow_handout.html)
